@@ -1,37 +1,61 @@
 import "./App.css";
+import React, { useEffect, useState } from "react";
 import { Route, Routes } from "react-router";
 import Header from "./components/Header";
 import Home from "./components/Home";
-import Html from "./components/Html";
-import Css from "./components/Css";
-import HtmlCon1 from "./components/HtmlCon1";
-import HtmlCon2 from "./components/HtmlCon2";
-import HtmlCon3 from "./components/HtmlCon3";
-import HtmlCon4 from "./components/HtmlCon4";
 import Footer from "./components/Footer";
+import NotFound from "./components/NotFound";
+import Contents from "./components/Contents";
+import Content from "./components/Content";
 
 function App() {
+  const [langs, setLangs] = useState({});
+  const [titles, setTitles] = useState();
+  useEffect(() => {
+    fetch("data.json")
+      .then((e) => e.json())
+      .then((res) => {
+        // console.log(res);
+        setLangs(res);
+      });
+  }, []);
+  useEffect(() => {
+    setTitles(Object.keys(langs));
+  }, [langs]);
   const style = {
     body: {
       minHeight: "100vh",
       display: "flex",
       flexDirection: "column",
+      background: "linear-gradient(0.25turn, #3f87a6, #ebf8e1, #f69d3c)",
     },
   };
 
   return (
     <div style={style.body}>
-      <Header />
+      <Header language={langs} />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/Html" element={<Html />}>
-          <Route path="HtmlCon1" element={<HtmlCon1 />} />
-          <Route path="HtmlCon2" element={<HtmlCon2 />} />
-          <Route path="HtmlCon3" element={<HtmlCon3 />} />
-          <Route path="HtmlCon4" element={<HtmlCon4 />} />
-        </Route>
-
-        <Route path="/Css" element={<Css />} />
+        {titles &&
+          titles.map((title, i) => (
+            <Route
+              key={i}
+              path={`${title}`}
+              element={<Contents language={Object.keys(langs[`${title}`])} />}
+            >
+              {Object.keys(langs[`${title}`]).map((innerTitle, i) => {
+                return (
+                  <Route
+                    path={`${innerTitle}`}
+                    element={
+                      <Content language={langs[`${title}`][`${innerTitle}`]} />
+                    }
+                  />
+                );
+              })}
+            </Route>
+          ))}
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />
     </div>
